@@ -1,4 +1,4 @@
-package models
+package errors
 
 import (
 	"fmt"
@@ -15,8 +15,8 @@ func (e *Error) Error() string {
 	return e.Message
 }
 
-// NewError NewError
-func NewError(msg string, args ...interface{}) error {
+// New New
+func New(msg string, args ...interface{}) error {
 	return &Error{fmt.Sprintf(msg, args...)}
 }
 

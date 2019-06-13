@@ -1,10 +1,10 @@
 package models
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/garyburd/redigo/redis"
+	"github.com/gocommon/models/errors"
 )
 
 // RedisService RedisService
@@ -32,7 +32,7 @@ func Redis(name ...string) *redis.Pool {
 
 	}
 
-	panic(fmt.Errorf("unkonw redis %s", k))
+	panic(errors.New("unkonw redis %s", k))
 
 	return nil
 }
@@ -58,12 +58,12 @@ func newRedis(conf RedisService) *redis.Pool {
 		Dial: func() (redis.Conn, error) {
 			c, err := redis.Dial("tcp", conf.Addr)
 			if err != nil {
-				return nil, Wrap(err, "redis Dial")
+				return nil, errors.Wrap(err, "redis Dial")
 			}
 			if len(conf.Passwd) > 0 {
 				if _, err := c.Do("AUTH", conf.Passwd); err != nil {
 					c.Close()
-					return nil, Wrap(err, "redis auth")
+					return nil, errors.Wrap(err, "redis auth")
 				}
 			}
 
@@ -71,7 +71,7 @@ func newRedis(conf RedisService) *redis.Pool {
 		},
 		TestOnBorrow: func(c redis.Conn, t time.Time) error {
 			_, err := c.Do("PING")
-			return Wrap(err, "redis ping")
+			return errors.Wrap(err, "redis ping")
 		},
 	}
 }

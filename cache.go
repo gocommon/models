@@ -1,9 +1,8 @@
 package models
 
 import (
-	"fmt"
-
 	"github.com/gocommon/cache"
+	"github.com/gocommon/models/errors"
 )
 
 // Caches Caches
@@ -25,7 +24,7 @@ func Cache(name ...string) cache.Cacher {
 
 	c, has := Caches[cname]
 	if !has {
-		return cache.NewErrCacher(fmt.Errorf("cache not found %s", name))
+		return cache.NewErrCacher(errors.New("cache not found %s", name))
 	}
 
 	return c

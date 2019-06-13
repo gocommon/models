@@ -6,8 +6,10 @@ import (
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
+
 	//  _ "github.com/jinzhu/gorm/dialects/postgres"
 	//  _ "github.com/jinzhu/gorm/dialects/sqlite"
+	"github.com/gocommon/models/errors"
 )
 
 // Drivers Drivers
@@ -40,7 +42,7 @@ func Model(name ...string) *gorm.DB {
 		return db
 	}
 
-	panic(fmt.Errorf("model 不存在 %s", k))
+	panic(errors.New("model 不存在 %s", k))
 
 	return nil
 }
@@ -72,13 +74,13 @@ func newGorm(conf GormService) (*gorm.DB, error) {
 	// case "postgres":
 	// case "sqlite3":
 	default:
-		return nil, NewError("未知的 gorm 驱动：%s", conf.Driver)
+		return nil, errors.New("未知的 gorm 驱动：%s", conf.Driver)
 
 	}
 
 	db, err := gorm.Open(conf.Driver, dsn)
 	if err != nil {
-		return nil, Wrap(err, "连接数据库失败")
+		return nil, errors.Wrap(err, "连接数据库失败")
 	}
 
 	db.SingularTable(true)
