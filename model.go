@@ -44,7 +44,6 @@ func Model(name ...string) *gorm.DB {
 
 	panic(errors.New("model 不存在 %s", k))
 
-	return nil
 }
 
 // InitModels InitModels

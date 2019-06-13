@@ -9,12 +9,12 @@ import (
 
 // RedisService RedisService
 type RedisService struct {
-	Enable bool
-	Addr   string
-	Passwd string
+	Enable bool   `dsn:"query.enable"`
+	Addr   string `dsn:"address"`
+	Passwd string `dsn:"password"`
 
-	MaxIdle     int
-	IdleTimeout int
+	MaxIdle     int `dsn:"query.maxidle"`
+	IdleTimeout int `dsn:"query.idletimeout"`
 }
 
 // RedisPools RedisPools
