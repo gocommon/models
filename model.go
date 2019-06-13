@@ -17,19 +17,19 @@ var Drivers map[string]*gorm.DB
 
 // GormService GormService
 type GormService struct {
-	Enable bool
-	Debug  bool
-	Driver string
-	Host   string
-	DB     string
-	User   string
-	Passwd string
+	Enable bool   `dsn:"query.enable"`
+	Debug  bool   `dsn:"query.debug"`
+	Driver string `dsn:"query.driver"`
+	Host   string `dsn:"address"`
+	DB     string `dsn:"query.db"`
+	User   string `dsn:"username"`
+	Passwd string `dsn:"password"`
 
-	Path string // for sqlite,tidb
+	Path string `dsn:"query.path"` // for sqlite,tidb
 
-	MaxIdle int // 连接池的空闲数大小
-	MaxOpen int // 最大打开连接数
-	LogPath string
+	MaxIdle int    `dsn:"query.maxidle"` // 连接池的空闲数大小
+	MaxOpen int    `dsn:"query.maxopen"` // 最大打开连接数
+	LogPath string `dsn:"query.logpath"`
 }
 
 // Model Model
