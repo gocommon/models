@@ -69,7 +69,7 @@ func newGorm(conf GormService) (*gorm.DB, error) {
 	switch conf.Driver {
 	case "mysql":
 		//[username[:password]@][protocol[(address)]]/dbname[?param1=value1&...&paramN=valueN]
-		dsn = fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8mb4&parseTime=True&loc=Local&zeroDateTimeBehavior=convertToNull", conf.User, conf.Passwd, conf.Host, conf.DB)
+		dsn = fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8mb4&parseTime=True&loc=Local&zeroDateTimeBehavior=CONVERT_TO_NULL", conf.User, conf.Passwd, conf.Host, conf.DB)
 	// case "postgres":
 	// case "sqlite3":
 	default:
