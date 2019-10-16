@@ -1,0 +1,25 @@
+# github.com/garyburd/redigo v1.6.0
+github.com/garyburd/redigo/internal
+github.com/garyburd/redigo/redis
+# github.com/go-sql-driver/mysql v1.4.1
+github.com/go-sql-driver/mysql
+# github.com/gocommon/cache v0.5.1
+github.com/gocommon/cache
+github.com/gocommon/cache/codec
+github.com/gocommon/cache/codec/codec
+github.com/gocommon/cache/codec/gob
+github.com/gocommon/cache/storer
+github.com/gocommon/cache/storer/redis
+github.com/gocommon/cache/storer/storer
+# github.com/gomodule/redigo v2.0.0+incompatible
+github.com/gomodule/redigo/internal
+github.com/gomodule/redigo/redis
+# github.com/jinzhu/gorm v1.9.9
+github.com/jinzhu/gorm
+github.com/jinzhu/gorm/dialects/mysql
+# github.com/jinzhu/inflection v1.0.0
+github.com/jinzhu/inflection
+# github.com/pkg/errors v0.8.1
+github.com/pkg/errors
+# google.golang.org/appengine v1.4.0
+google.golang.org/appengine/cloudsql

@@ -3,17 +3,73 @@ package models
 import (
 	"fmt"
 	"os"
+	"sync"
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 
 	//  _ "github.com/jinzhu/gorm/dialects/postgres"
 	//  _ "github.com/jinzhu/gorm/dialects/sqlite"
+
 	"github.com/gocommon/models/errors"
 )
 
+// SDrivers SDrivers
+var SDrivers = &SDriver{}
+
+// SDriver SDriver
+type SDriver struct {
+	rw      sync.RWMutex
+	drivers map[string]*gorm.DB
+}
+
+// Get Get
+func (s *SDriver) Get(name string) *gorm.DB {
+	s.rw.RLock()
+	defer s.rw.RUnlock()
+
+	k := "default"
+	if len(name) > 0 {
+		k = name
+	}
+	if db, ok := s.drivers[k]; ok {
+		return db
+	}
+
+	return nil
+}
+
+// Reload Reload
+func (s *SDriver) Reload(confs map[string]GormService) error {
+	s.rw.Lock()
+	defer s.rw.Unlock()
+
+	for _, v := range s.drivers {
+		go func(db *gorm.DB) {
+			db.Close()
+		}(v)
+	}
+
+	drivers := make(map[string]*gorm.DB)
+	for k, v := range confs {
+		if !v.Enable {
+			continue
+		}
+		db, err := newGorm(v)
+		if err != nil {
+			return err
+		}
+
+		drivers[k] = db
+	}
+
+	s.drivers = drivers
+
+	return nil
+}
+
 // Drivers Drivers
-var Drivers map[string]*gorm.DB
+// var Drivers map[string]*gorm.DB
 
 // GormService GormService
 type GormService struct {
@@ -34,13 +90,19 @@ type GormService struct {
 
 // Model Model
 func Model(name ...string) *gorm.DB {
+
 	k := "default"
 	if len(name) > 0 {
 		k = name[0]
 	}
-	if db, ok := Drivers[k]; ok {
+
+	if db := SDrivers.Get(k); db != nil {
 		return db
 	}
+
+	// if db, ok := Drivers[k]; ok {
+	// 	return db
+	// }
 
 	panic(errors.New("model 不存在 %s", k))
 
@@ -48,20 +110,23 @@ func Model(name ...string) *gorm.DB {
 
 // InitModels InitModels
 func InitModels(confs map[string]GormService) error {
-	Drivers = make(map[string]*gorm.DB)
-	for k, v := range confs {
-		if !v.Enable {
-			continue
-		}
-		db, err := newGorm(v)
-		if err != nil {
-			return err
-		}
 
-		Drivers[k] = db
-	}
+	return SDrivers.Reload(confs)
 
-	return nil
+	// Drivers = make(map[string]*gorm.DB)
+	// for k, v := range confs {
+	// 	if !v.Enable {
+	// 		continue
+	// 	}
+	// 	db, err := newGorm(v)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+
+	// 	Drivers[k] = db
+	// }
+
+	// return nil
 }
 
 func newGorm(conf GormService) (*gorm.DB, error) {
