@@ -47,21 +47,26 @@ func (s *SRedisPool) Get(name string) *redis.Pool {
 
 // Reload Reload
 func (s *SRedisPool) Reload(confs map[string]RedisService) {
-	s.rw.RLock()
-	defer s.rw.RUnlock()
-
-	for _, v := range s.pools {
-		go func(pool *redis.Pool) {
-			pool.Close()
-		}(v)
-	}
 
 	pools := make(map[string]*redis.Pool)
 	for name, conf := range confs {
 		pools[name] = newRedis(conf)
 	}
 
+	s.rw.RLock()
+	oPools := make(map[string]*redis.Pool)
+	for k, v := range s.pools {
+		oPools[k] = v
+	}
+
 	s.pools = pools
+	s.rw.RUnlock()
+
+	go func(oPools map[string]*redis.Pool) {
+		for _, pool := range oPools {
+			pool.Close()
+		}
+	}(oPools)
 }
 
 // HasRedis HasRedis
