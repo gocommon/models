@@ -161,6 +161,10 @@ func newGorm(conf GormService) (*gorm.DB, error) {
 		db.DB().SetMaxIdleConns(conf.MaxIdle)
 	}
 
+	if conf.Lifetime > 0 {
+		db.DB().SetConnMaxLifetime(time.Second * time.Duration(conf.Lifetime))
+	}
+
 	if conf.MaxOpen > 0 {
 		db.DB().SetMaxOpenConns(conf.MaxOpen)
 	}
