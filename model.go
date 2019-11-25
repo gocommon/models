@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"sync"
+	"time"
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
@@ -41,15 +42,6 @@ func (s *SDriver) Get(name string) *gorm.DB {
 
 // Reload Reload
 func (s *SDriver) Reload(confs map[string]GormService) error {
-	s.rw.Lock()
-	defer s.rw.Unlock()
-
-	for _, v := range s.drivers {
-		go func(db *gorm.DB) {
-			db.Close()
-		}(v)
-	}
-
 	drivers := make(map[string]*gorm.DB)
 	for k, v := range confs {
 		if !v.Enable {
@@ -63,7 +55,22 @@ func (s *SDriver) Reload(confs map[string]GormService) error {
 		drivers[k] = db
 	}
 
+	s.rw.Lock()
+	oDrivers := make(map[string]*gorm.DB)
+	for k, v := range s.drivers {
+		oDrivers[k] = v
+	}
+
 	s.drivers = drivers
+	s.rw.Unlock()
+
+	go func(oDrivers map[string]*gorm.DB) {
+		time.AfterFunc(10*time.Second, func() {
+			for _, driver := range oDrivers {
+				driver.Close()
+			}
+		})
+	}(oDrivers)
 
 	return nil
 }

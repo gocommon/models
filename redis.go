@@ -1,6 +1,7 @@
 package models
 
 import (
+	"sync"
 	"time"
 
 	"github.com/garyburd/redigo/redis"
@@ -17,8 +18,66 @@ type RedisService struct {
 	IdleTimeout int `dsn:"query.idletimeout"`
 }
 
+// SRedisPools SRedisPools
+var SRedisPools = &SRedisPool{}
+
+// SRedisPool SRedisPool
+type SRedisPool struct {
+	rw    sync.RWMutex
+	pools map[string]*redis.Pool
+}
+
+// Get Get
+func (s *SRedisPool) Get(name string) *redis.Pool {
+	s.rw.RLock()
+	defer s.rw.RUnlock()
+
+	k := "default"
+	if len(name) > 0 {
+		k = name
+	}
+
+	if pool, ok := s.pools[k]; ok {
+		return pool
+
+	}
+
+	return nil
+}
+
+// Reload Reload
+func (s *SRedisPool) Reload(confs map[string]RedisService) {
+
+	pools := make(map[string]*redis.Pool)
+	for name, conf := range confs {
+		pools[name] = newRedis(conf)
+	}
+
+	s.rw.RLock()
+	oPools := make(map[string]*redis.Pool)
+	for k, v := range s.pools {
+		oPools[k] = v
+	}
+
+	s.pools = pools
+	s.rw.RUnlock()
+
+	go func(oPools map[string]*redis.Pool) {
+		for _, pool := range oPools {
+			pool.Close()
+		}
+	}(oPools)
+}
+
+// HasRedis HasRedis
+func (s *SRedisPool) HasRedis(name string) bool {
+	_, ok := s.pools[name]
+
+	return ok
+}
+
 // RedisPools RedisPools
-var RedisPools map[string]*redis.Pool
+// var RedisPools map[string]*redis.Pool
 
 // Redis Redis
 func Redis(name ...string) *redis.Pool {
@@ -27,28 +86,34 @@ func Redis(name ...string) *redis.Pool {
 		k = name[0]
 	}
 
-	if pool, ok := RedisPools[k]; ok {
+	if pool := SRedisPools.Get(k); pool != nil {
 		return pool
-
 	}
+
+	// if pool, ok := RedisPools[k]; ok {
+	// 	return pool
+
+	// }
 
 	panic(errors.New("unkonw redis %s", k))
 
-	return nil
 }
 
 // HasRedis HasRedis
 func HasRedis(name string) bool {
-	_, ok := RedisPools[name]
-	return ok
+	// _, ok := RedisPools[name]
+	// return ok
+	return SRedisPools.HasRedis(name)
 }
 
 // InitRedis InitRedis
 func InitRedis(confs map[string]RedisService) {
-	RedisPools = make(map[string]*redis.Pool)
-	for name, conf := range confs {
-		RedisPools[name] = newRedis(conf)
-	}
+	SRedisPools.Reload(confs)
+
+	// RedisPools = make(map[string]*redis.Pool)
+	// for name, conf := range confs {
+	// 	RedisPools[name] = newRedis(conf)
+	// }
 }
 
 func newRedis(conf RedisService) *redis.Pool {
