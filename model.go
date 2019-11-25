@@ -83,9 +83,10 @@ type GormService struct {
 
 	Path string `dsn:"query.path"` // for sqlite,tidb
 
-	MaxIdle int    `dsn:"query.maxidle"` // 连接池的空闲数大小
-	MaxOpen int    `dsn:"query.maxopen"` // 最大打开连接数
-	LogPath string `dsn:"query.logpath"`
+	MaxIdle  int    `dsn:"query.maxidle"`  // 连接池的空闲数大小
+	MaxOpen  int    `dsn:"query.maxopen"`  // 最大打开连接数
+	Lifetime int    `dsn:"query.lifetime"` // 连接有效期
+	LogPath  string `dsn:"query.logpath"`
 }
 
 // Model Model
