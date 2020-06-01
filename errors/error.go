@@ -22,6 +22,10 @@ func New(msg string, args ...interface{}) error {
 
 // Wrap Wrap
 func Wrap(err error, msg string) error {
+	if err == nil {
+		return nil
+	}
+
 	if _, ok := err.(*Error); !ok {
 		err = &Error{err.Error()}
 	}
