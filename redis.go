@@ -132,11 +132,15 @@ func newRedis(conf RedisService) *redis.Pool {
 				}
 			}
 
-			return c, err
+			return c, nil
 		},
 		TestOnBorrow: func(c redis.Conn, t time.Time) error {
 			_, err := c.Do("PING")
-			return errors.Wrap(err, "redis ping")
+			if err != nil {
+				return errors.Wrap(err, "redis ping")
+			}
+
+			return nil
 		},
 	}
 }
